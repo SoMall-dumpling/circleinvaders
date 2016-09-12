@@ -37,7 +37,6 @@ public class MoveWithKeyboard : MonoBehaviour {
         newPosition.y = r * Mathf.Sin(newAngleRadian);
         transform.position = newPosition;
 
-        // transform.rotation = Quaternion.FromToRotation(new Vector3(0, 0, 0), transform.forward);
         transform.Rotate(new Vector3(0,0,1) * radians * 180 / Mathf.PI * Time.deltaTime);
     }
 }
