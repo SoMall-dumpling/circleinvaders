@@ -16,5 +16,13 @@
     {
         HealthChanged();
     }
+
+    public delegate void OnLose();
+    public event OnLose Lose;
+
+    public void DispatchLose()
+    {
+        Lose();
+    }
 	
 }

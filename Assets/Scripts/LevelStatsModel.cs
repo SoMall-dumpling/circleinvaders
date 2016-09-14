@@ -19,7 +19,16 @@
         {
             _currentHealth = value;
             SingletonMapper.Get<EventManager>().DispatchHealthChanged();
+            if (_currentHealth <= 0)
+            {
+                SingletonMapper.Get<EventManager>().DispatchLose();
+            }
         }
+    }
+
+    public bool IsLost()
+    {
+        return _currentHealth <= 0;
     }
 
 }

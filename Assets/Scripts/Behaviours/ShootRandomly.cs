@@ -13,6 +13,12 @@ public class ShootRandomly : MonoBehaviour
 
     void Shoot()
     {
+        if (SingletonMapper.Get<LevelStatsModel>().IsLost())
+        {
+            CancelInvoke();
+            return;
+        }
+
         if (Random.Range(0, 100) < 2)
         { 
             GameObject bullet = Instantiate(Bullet, transform.position - transform.up.normalized, Quaternion.identity) as GameObject;

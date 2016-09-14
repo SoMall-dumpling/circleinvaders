@@ -48,6 +48,11 @@ public class MoveEnemy : MonoBehaviour {
 
     void MoveTowardsPlanet()
     {
+        if (SingletonMapper.Get<LevelStatsModel>().IsLost())
+        {
+            return;
+        }
+
         Vector3 newPosition = transform.position;
         Vector3 moveDirection = -transform.position.normalized;
         newPosition = transform.position + moveDirection * EnemyConstants.ENEMY_ROW_DISTANCE;

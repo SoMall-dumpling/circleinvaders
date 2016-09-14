@@ -27,7 +27,7 @@ public class EnemySpawner : MonoBehaviour {
                 Vector3 position = new Vector3(distance * Mathf.Cos(angle), distance * Mathf.Sin(angle), 0);
                 angleInDegrees = angle * (180 / Mathf.PI) - 90;
                 rotation = Quaternion.Euler(0, 0, angleInDegrees);
-                Instantiate(Enemy, position, rotation);
+                Instantiate(Enemy, position, rotation, transform);
             }
         }
     }
