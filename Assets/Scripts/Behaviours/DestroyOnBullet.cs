@@ -5,7 +5,10 @@ public class DestroyOnBullet : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D collision)
     {
-        Destroy(gameObject);
-        Destroy(collision.gameObject);
+        if (collision.gameObject.tag == "PlayerBullet")
+        { 
+            Destroy(gameObject);
+            Destroy(collision.gameObject);
+        }
     }
 }

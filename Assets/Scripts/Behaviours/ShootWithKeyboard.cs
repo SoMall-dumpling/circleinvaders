@@ -1,14 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ShootBullets : MonoBehaviour {
+public class ShootWithKeyboard : MonoBehaviour {
 
     public GameObject Bullet;
-
-	void Start ()
-    {
-	
-	}
 	
 	void Update ()
     {
