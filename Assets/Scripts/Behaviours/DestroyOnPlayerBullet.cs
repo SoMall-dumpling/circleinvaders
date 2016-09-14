@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class DestroyOnBullet : MonoBehaviour {
+public class DestroyOnPlayerBullet : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D collision)
     {

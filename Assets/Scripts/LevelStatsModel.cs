@@ -11,4 +11,15 @@
         }
     }
 
+    private int _currentHealth = LevelConstants.MAX_HEALTH;
+    public int CurrentHealth
+    {
+        get { return _currentHealth; }
+        set
+        {
+            _currentHealth = value;
+            SingletonMapper.Get<EventManager>().DispatchHealthChanged();
+        }
+    }
+
 }

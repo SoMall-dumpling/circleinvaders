@@ -16,7 +16,7 @@ public class ShootRandomly : MonoBehaviour
         if (Random.Range(0, 100) < 2)
         { 
             GameObject bullet = Instantiate(Bullet, transform.position - transform.up.normalized, Quaternion.identity) as GameObject;
-            bullet.GetComponent<Rigidbody2D>().AddForce(-transform.up * 3, ForceMode2D.Impulse);
+            bullet.GetComponent<Rigidbody2D>().AddForce(-transform.up * 2, ForceMode2D.Impulse);
         }
     }
 }

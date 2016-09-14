@@ -9,5 +9,12 @@
         ScoreGained(value);
     }
 
+    public delegate void OnHealthChanged();
+    public event OnHealthChanged HealthChanged;
+
+    public void DispatchHealthChanged()
+    {
+        HealthChanged();
+    }
 	
 }
