@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class EnemySpawner : MonoBehaviour {
 
     public GameObject Enemy;
+
+    private bool wavePending = false;
 
 	void Start ()
     {
@@ -12,8 +13,16 @@ public class EnemySpawner : MonoBehaviour {
 	
 	void Update ()
     {
-	
-	}
+        if (!wavePending) { 
+            int enemyCount = GameObject.FindGameObjectsWithTag(TagConstants.ENEMY).Length;
+            if (enemyCount == 0)
+            {
+                wavePending = true;
+                SingletonMapper.Get<LevelStatsModel>().CurrentWaveNumber++;
+                Invoke("SpawnEnemies", 2);
+            }
+        }
+    }
 
     void SpawnEnemies()
     {
@@ -30,5 +39,7 @@ public class EnemySpawner : MonoBehaviour {
                 Instantiate(Enemy, position, rotation, transform);
             }
         }
+
+        wavePending = false;
     }
 }

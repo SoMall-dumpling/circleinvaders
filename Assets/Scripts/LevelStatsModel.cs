@@ -1,6 +1,17 @@
 ﻿public class LevelStatsModel
 {
 
+    private int _currentWaveNumber = 1;
+    public int CurrentWaveNumber
+    {
+        get { return _currentWaveNumber;  }
+        set
+        {
+            _currentWaveNumber = value;
+            SingletonMapper.Get<EventManager>().DispatchWaveStarted();
+        }
+    }
+
     private int _currentScore = 0;
     public int CurrentScore {
         get { return _currentScore; }

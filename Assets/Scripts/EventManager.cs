@@ -1,6 +1,14 @@
 ﻿public class EventManager
 {
 
+    public delegate void OnWaveStarted();
+    public event OnWaveStarted WaveStarted;
+
+    public void DispatchWaveStarted()
+    {
+        WaveStarted();
+    }
+
     public delegate void OnScoreGained(int amount);
     public event OnScoreGained ScoreGained;
 

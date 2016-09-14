@@ -55,7 +55,7 @@ public class MoveEnemy : MonoBehaviour {
 
         Vector3 newPosition = transform.position;
         Vector3 moveDirection = -transform.position.normalized;
-        newPosition = transform.position + moveDirection * EnemyConstants.ENEMY_ROW_DISTANCE;
+        newPosition = transform.position + moveDirection * EnemyConstants.ENEMY_ROW_DISTANCE * 0.5f;
         transform.position = newPosition;
     }
 }

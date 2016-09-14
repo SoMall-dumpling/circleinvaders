@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour {
 
     public GameObject ScoreText;
+    public GameObject WaveText;
     public GameObject[] HealthIndicators;
     public GameObject GameEndText;
 
@@ -16,12 +17,14 @@ public class UIManager : MonoBehaviour {
 
         SingletonMapper.Get<EventManager>().ScoreGained += OnScoreGained;
         SingletonMapper.Get<EventManager>().HealthChanged += OnHealthChanged;
-        SingletonMapper.Get<EventManager>().HealthChanged += OnLose;
+        SingletonMapper.Get<EventManager>().WaveStarted += OnWaveStarted;
+        SingletonMapper.Get<EventManager>().Lose += OnLose;
 
         levelStatsModel = SingletonMapper.Get<LevelStatsModel>();
 
         UpdateHealth();
         UpdateScore();
+        UpdateWave();
     }
 
     void Update()
@@ -44,11 +47,19 @@ public class UIManager : MonoBehaviour {
 
     private void OnLose()
     {
+        UpdateComponentVisibility();
+    }
+
+    private void OnWaveStarted()
+    {
+        UpdateComponentVisibility();
+        UpdateWave();
     }
 
     private void UpdateScore()
     {
-        if (ScoreText) { 
+        if (ScoreText)
+        { 
             ScoreText.GetComponent<Text>().text = levelStatsModel.CurrentScore.ToString();
         }
     }
@@ -56,12 +67,21 @@ public class UIManager : MonoBehaviour {
     private void UpdateHealth()
     {
         int health = levelStatsModel.CurrentHealth;
-
-        GameEndText.SetActive(health <= 0);
-
         for (int i = 0; i < HealthIndicators.Length; i++)
         {
             HealthIndicators[i].SetActive(i < health);
         }
+    }
+
+    void UpdateWave()
+    {
+        WaveText.GetComponent<Text>().text = "Wave " + levelStatsModel.CurrentWaveNumber.ToString();
+    }
+
+    void UpdateComponentVisibility()
+    {
+        GameEndText.SetActive(levelStatsModel.IsLost());
+        ScoreText.SetActive(!levelStatsModel.IsLost());
+        WaveText.SetActive(!levelStatsModel.IsLost());
     }
 }
