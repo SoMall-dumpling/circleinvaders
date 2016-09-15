@@ -1,7 +1,7 @@
 ﻿public class LevelStatsModel
 {
 
-    private int _currentWaveNumber = 1;
+    private int _currentWaveNumber = 0;
     public int CurrentWaveNumber
     {
         get { return _currentWaveNumber;  }

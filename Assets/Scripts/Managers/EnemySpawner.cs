@@ -4,42 +4,166 @@ public class EnemySpawner : MonoBehaviour {
 
     public GameObject Enemy;
 
+    private EnemyFormationEnum[] formations = new EnemyFormationEnum[]
+    {
+        EnemyFormationEnum.FourBalanced,
+        EnemyFormationEnum.TwoSmall,
+        EnemyFormationEnum.Spiral,
+        EnemyFormationEnum.VerticalLines,
+        EnemyFormationEnum.FourUnbalanced,
+        EnemyFormationEnum.TwoBig,
+        EnemyFormationEnum.HorizontalLines,
+        EnemyFormationEnum.Zigzag
+    };
+
     private bool wavePending = false;
 
 	void Start ()
     {
-        SpawnEnemies();
+        StartWave();
 	}
 	
-	void Update ()
+	void Update()
     {
         if (!wavePending) { 
             int enemyCount = GameObject.FindGameObjectsWithTag(TagConstants.ENEMY).Length;
             if (enemyCount == 0)
             {
                 wavePending = true;
-                SingletonMapper.Get<LevelStatsModel>().CurrentWaveNumber++;
-                Invoke("SpawnEnemies", 2);
+                Invoke("StartWave", 2);
             }
         }
     }
 
-    void SpawnEnemies()
+    void StartWave()
     {
-        float angleInDegrees = 0;
-        Quaternion rotation = Quaternion.identity;
-        for (float angle = 0; angle < Mathf.PI * 2; angle += Mathf.PI / 10)
+        SingletonMapper.Get<LevelStatsModel>().CurrentWaveNumber++;
+        EnemyFormationEnum currentFormation = formations[(SingletonMapper.Get<LevelStatsModel>().CurrentWaveNumber - 1) % formations.Length];
+        SpawnEnemies(currentFormation);
+    }
+
+    void SpawnEnemies(EnemyFormationEnum formation)
+    {
+        Debug.Log("Spawning enemies in formation " + formation);
+        int maxEnemiesOnCircle = EnemyConstants.MAX_ENEMIES_ON_CIRCLE;
+
+        EnemyMovementSettingsVO movementSettings;
+        int enemiesPerBlock;
+        switch (formation) {
+            case EnemyFormationEnum.FourBalanced:
+                enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 4);
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI / 2, 1);
+                SpawnEnemyBlock(movementSettings, 0, enemiesPerBlock - 1);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock, enemiesPerBlock * 2 - 1);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock * 3, enemiesPerBlock * 4 - 1);
+                break;
+
+            case EnemyFormationEnum.FourUnbalanced:
+                enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 4);
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI / 2, 1);
+                SpawnEnemyBlock(movementSettings, 0, enemiesPerBlock - 1, 0, 4);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock, enemiesPerBlock * 2 - 1, 2, 4);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1, 0, 4);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock * 3, enemiesPerBlock * 4 - 1, 2, 4);
+                break;
+
+            case EnemyFormationEnum.HorizontalLines:
+                enemiesPerBlock = 5;
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 3, -1);
+                for (int i = 0; i < EnemyConstants.MAX_ENEMY_ROWS; i++)
+                {
+                    movementSettings.StartDirection = i % 2 == 0 ? -1 : 1;
+                    SpawnEnemyBlock(movementSettings, i * enemiesPerBlock + i, i* enemiesPerBlock + enemiesPerBlock + i, i, i+1);
+                }
+                break;
+
+            case EnemyFormationEnum.Spiral:
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.Spiral, Mathf.PI * 2, -1);
+                float circlePosRadians = Mathf.PI * 2 / EnemyConstants.MAX_ENEMIES_ON_CIRCLE;
+                float distance = LevelConstants.MIN_ENEMY_SPAWN_DISTANCE;
+                float angle = 0;
+                while (distance < LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + EnemyConstants.MAX_ENEMY_ROWS * EnemyConstants.ENEMY_ROW_DISTANCE)
+                {
+                    SpawnEnemyAt(distance, angle, movementSettings);
+                    distance += (EnemyConstants.ENEMY_ROW_DISTANCE / EnemyConstants.MAX_ENEMIES_ON_CIRCLE) * 1.5f;
+                    angle += circlePosRadians;
+                }
+                break;
+
+            case EnemyFormationEnum.TwoBig:
+                enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 2);
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI, 1);
+                SpawnEnemyBlock(movementSettings, 0, enemiesPerBlock - 1);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock, enemiesPerBlock * 2 - 1);
+                break;
+
+            case EnemyFormationEnum.TwoSmall:
+                enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 4);
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, 1);
+                SpawnEnemyBlock(movementSettings, 0, enemiesPerBlock - 1);
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, -1);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1);
+                break;
+
+            case EnemyFormationEnum.VerticalLines:
+                int numVerticalLines = 8;
+                int blockDistance = EnemyConstants.MAX_ENEMIES_ON_CIRCLE / numVerticalLines;
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, 1);
+                for (int i = 0; i < numVerticalLines; i++)
+                {
+                    SpawnEnemyBlock(movementSettings, i * blockDistance, i * blockDistance + 1);
+                }
+                break;
+
+            case EnemyFormationEnum.Zigzag:
+                enemiesPerBlock = EnemyConstants.MAX_ENEMIES_ON_CIRCLE / 8;
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, 1);
+                for (int i = 0; i <EnemyConstants.MAX_ENEMIES_ON_CIRCLE; i++)
+                {
+                    SpawnEnemyBlock(movementSettings, i * enemiesPerBlock, i * enemiesPerBlock + enemiesPerBlock, i % 2 == 0 ? 0 : 2, i % 2 == 0 ? 2 : 4);
+                }
+                break;
+
+            default:
+                enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 4);
+                movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI / 2, 1);
+                SpawnEnemyBlock(movementSettings, 0, enemiesPerBlock);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock, enemiesPerBlock * 2);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock * 2, enemiesPerBlock * 3);
+                SpawnEnemyBlock(movementSettings, enemiesPerBlock * 3, enemiesPerBlock * 4);
+                break;
+        }
+        wavePending = false;
+    }
+
+    void SpawnEnemyBlock(EnemyMovementSettingsVO movementSettings, float startCirclePos, float endCirclePos, int startRow = 0, int endRow = EnemyConstants.MAX_ENEMY_ROWS)
+    {
+        float circlePosRadians = Mathf.PI * 2 / EnemyConstants.MAX_ENEMIES_ON_CIRCLE;
+        float startRadians = startCirclePos * circlePosRadians;
+        float endRadians = endCirclePos * circlePosRadians;
+        float startDistance = LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + startRow * EnemyConstants.ENEMY_ROW_DISTANCE;
+        float endDistance = LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + endRow * EnemyConstants.ENEMY_ROW_DISTANCE;
+
+        for (float angle = startRadians; angle < (endRadians - circlePosRadians * 0.5f); angle += circlePosRadians)
         {
-            if (angle % (Mathf.PI / 2) < 0.1) continue;
-            for (float distance = 5.25f; distance > 3f; distance -= EnemyConstants.ENEMY_ROW_DISTANCE)
+            for (float distance = startDistance; distance < (endDistance - EnemyConstants.ENEMY_ROW_DISTANCE * 0.5); distance += EnemyConstants.ENEMY_ROW_DISTANCE)
             {
-                Vector3 position = new Vector3(distance * Mathf.Cos(angle), distance * Mathf.Sin(angle), 0);
-                angleInDegrees = angle * (180 / Mathf.PI) - 90;
-                rotation = Quaternion.Euler(0, 0, angleInDegrees);
-                Instantiate(Enemy, position, rotation, transform);
+                SpawnEnemyAt(distance, angle, movementSettings);
             }
         }
+    }
 
-        wavePending = false;
+    void SpawnEnemyAt(float distance, float angle, EnemyMovementSettingsVO movementSettings)
+    {
+        // create enemy game object
+        Vector3 position = new Vector3(distance * Mathf.Cos(angle), distance * Mathf.Sin(angle), 0);
+        float angleInDegrees = angle * (180 / Mathf.PI) - 90;
+        Quaternion rotation = Quaternion.Euler(0, 0, angleInDegrees);
+        GameObject enemy = Instantiate(Enemy, position, rotation, transform) as GameObject;
+
+        // set movement settings
+        MoveEnemy moveComponent = enemy.GetComponent<MoveEnemy>();
+        moveComponent.SetSettings(movementSettings);
     }
 }
