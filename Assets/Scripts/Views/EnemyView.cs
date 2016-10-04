@@ -22,7 +22,7 @@ public class EnemyView : MonoBehaviour {
     void SetSprite()
     {
         Sprite sprite = SpriteBasicEnemy;
-        switch (enemyProperties.enemyType)
+        switch (enemyProperties.EnemyType)
         {
             case EnemyTypeEnum.Big:
                 sprite = SpriteBigEnemy;

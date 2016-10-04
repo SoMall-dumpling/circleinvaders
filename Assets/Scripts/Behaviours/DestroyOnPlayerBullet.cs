@@ -1,13 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class DestroyOnPlayerBullet : MonoBehaviour {
+public class DestroyOnPlayerBullet : MonoBehaviour
+{
 
-	void OnTriggerEnter2D(Collider2D collision)
+    EnemyProperties enemyProperties;
+
+    void Start()
+    {
+        enemyProperties = GetComponent<EnemyProperties>();
+    }
+
+    void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "PlayerBullet")
-        { 
-            Destroy(gameObject);
+        {
+            enemyProperties.CurrentHits++;
+            if (enemyProperties.CurrentHits == enemyProperties.HitsToKill)
+            {
+                Destroy(gameObject);
+            }
             Destroy(collision.gameObject);
         }
     }

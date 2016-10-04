@@ -1,17 +1,20 @@
 ﻿using UnityEngine;
 
-public class MoveEnemy : MonoBehaviour {
+public class MoveEnemy : MonoBehaviour
+{
 
-    public float StepTime = 1;
+    public float StepTime = 0.9f;
 
     private int stepsOnCircleNum = 0;
     private int stepsOnCircleDirection = 1;
     private int stepsOnCircleCounter = 0;
 
+    private EnemyProperties enemyProperties;
     private EnemyMovementSettingsVO movementSettings;
 
     void Start()
     {
+        enemyProperties = GetComponent<EnemyProperties>();
     }
 
     public void SetSettings(EnemyMovementSettingsVO value)
@@ -27,10 +30,10 @@ public class MoveEnemy : MonoBehaviour {
     {
         if (movementSettings == null) return;
 
-        switch(movementSettings.MovementType)
+        switch (movementSettings.MovementType)
         {
             case EnemyMovementTypeEnum.Spiral:
-                float stepsInFullCircle = Mathf.PI * 2 / EnemyConstants.ENEMY_STEP_ANGLE;
+                float stepsInFullCircle = Mathf.PI * 2 / (EnemyConstants.ENEMY_STEP_ANGLE * enemyProperties.MovementSpeed);
                 MoveOnCircle(EnemyConstants.ENEMY_ROW_DISTANCE / stepsInFullCircle * 1.5f);
                 break;
 
@@ -55,7 +58,7 @@ public class MoveEnemy : MonoBehaviour {
     {
         float distance = transform.position.magnitude;
         float currentAngleRadian = Mathf.Atan2(transform.position.y, transform.position.x);
-        float newAngleRadian = currentAngleRadian + EnemyConstants.ENEMY_STEP_ANGLE * stepsOnCircleDirection;
+        float newAngleRadian = currentAngleRadian + EnemyConstants.ENEMY_STEP_ANGLE * enemyProperties.MovementSpeed * stepsOnCircleDirection;
 
         Vector3 newPosition = new Vector3(distance * Mathf.Cos(newAngleRadian), distance * Mathf.Sin(newAngleRadian), 0);
         newPosition = newPosition + (-newPosition.normalized * moveDownDistance);
@@ -72,9 +75,12 @@ public class MoveEnemy : MonoBehaviour {
             return;
         }
 
-        Vector3 newPosition = transform.position;
-        Vector3 moveDirection = -transform.position.normalized;
-        newPosition = transform.position + moveDirection * EnemyConstants.ENEMY_ROW_DISTANCE * 0.5f;
-        transform.position = newPosition;
+        if (enemyProperties.IsApproaching)
+        {
+            Vector3 newPosition = transform.position;
+            Vector3 moveDirection = -transform.position.normalized;
+            newPosition = transform.position + moveDirection * EnemyConstants.ENEMY_ROW_DISTANCE * 0.5f;
+            transform.position = newPosition;
+        }
     }
 }
