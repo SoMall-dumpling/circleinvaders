@@ -17,10 +17,12 @@ public class EnemySpawner : MonoBehaviour
         EnemyFormationEnum.Zigzag
     };
 
+    private LevelStatsModel levelStatsModel;
     private bool wavePending = false;
 
     void Start()
     {
+        levelStatsModel = SingletonMapper.Get<LevelStatsModel>();
         StartWave();
     }
 
@@ -39,14 +41,14 @@ public class EnemySpawner : MonoBehaviour
 
     void StartWave()
     {
-        SingletonMapper.Get<LevelStatsModel>().CurrentWaveNumber++;
-        EnemyFormationEnum currentFormation = formations[(SingletonMapper.Get<LevelStatsModel>().CurrentWaveNumber - 1) % formations.Length];
+        levelStatsModel.CurrentWaveNumber++;
+        EnemyFormationEnum currentFormation = formations[(levelStatsModel.CurrentWaveNumber - 1) % formations.Length];
         SpawnEnemies(currentFormation);
     }
 
     void SpawnEnemies(EnemyFormationEnum formation)
     {
-        Debug.Log("Spawning enemies in formation " + formation);
+        if (Debug.isDebugBuild) Debug.Log("Spawning enemies in formation " + formation);
         int maxEnemiesOnCircle = EnemyConstants.MAX_ENEMIES_ON_CIRCLE;
 
         EnemyMovementSettingsVO movementSettings;
@@ -57,27 +59,29 @@ public class EnemySpawner : MonoBehaviour
                 enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 4);
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI / 2, 1);
                 SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, 0, enemiesPerBlock - 1);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Small, enemiesPerBlock, enemiesPerBlock * 2 - 1);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Shooter, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Big, enemiesPerBlock * 3, enemiesPerBlock * 4 - 1);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock, enemiesPerBlock * 2 - 1);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock * 3, enemiesPerBlock * 4 - 1);
                 break;
 
             case EnemyFormationEnum.FourUnbalanced:
                 enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 4);
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI / 2, 1);
                 SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, 0, enemiesPerBlock - 1, 0, 4);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock, enemiesPerBlock * 2 - 1, 2, 4);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Shooter, enemiesPerBlock, enemiesPerBlock * 2 - 1, 2, 4);
                 SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1, 0, 4);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock * 3, enemiesPerBlock * 4 - 1, 2, 4);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Shooter, enemiesPerBlock * 3, enemiesPerBlock * 4 - 1, 2, 4);
                 break;
 
             case EnemyFormationEnum.HorizontalLines:
-                enemiesPerBlock = 5;
+                enemiesPerBlock = 7;
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 3, -1);
                 for (int i = 0; i < EnemyConstants.MAX_ENEMY_ROWS; i++)
                 {
                     movementSettings.StartDirection = i % 2 == 0 ? -1 : 1;
-                    SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, i * enemiesPerBlock + i, i * enemiesPerBlock + enemiesPerBlock + i, i, i + 1);
+                    SpawnEnemyBlock(movementSettings,
+                        i == 0 ? EnemyTypeEnum.Small : i == 1 ? EnemyTypeEnum.Big : i == 3 ? EnemyTypeEnum.Shooter : EnemyTypeEnum.Basic,
+                        i * enemiesPerBlock + i, i * enemiesPerBlock + enemiesPerBlock + i, i, i + 1);
                 }
                 break;
 
@@ -88,7 +92,7 @@ public class EnemySpawner : MonoBehaviour
                 float angle = 0;
                 while (distance < LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + EnemyConstants.MAX_ENEMY_ROWS * EnemyConstants.ENEMY_ROW_DISTANCE)
                 {
-                    SpawnEnemyAt(distance,  angle, EnemyTypeEnum.Basic, movementSettings);
+                    SpawnEnemyAt(distance, angle, EnemyTypeEnum.Basic, movementSettings);
                     distance += (EnemyConstants.ENEMY_ROW_DISTANCE / EnemyConstants.MAX_ENEMIES_ON_CIRCLE) * 1.5f;
                     angle += circlePosRadians;
                 }
@@ -97,8 +101,8 @@ public class EnemySpawner : MonoBehaviour
             case EnemyFormationEnum.TwoBig:
                 enemiesPerBlock = Mathf.FloorToInt(maxEnemiesOnCircle / 2);
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI, 1);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, 0, enemiesPerBlock - 1);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock, enemiesPerBlock * 2 - 1);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Big, 0, enemiesPerBlock - 1);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Small, enemiesPerBlock, enemiesPerBlock * 2 - 1);
                 break;
 
             case EnemyFormationEnum.TwoSmall:
@@ -106,7 +110,7 @@ public class EnemySpawner : MonoBehaviour
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, 1);
                 SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, 0, enemiesPerBlock - 1);
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, -1);
-                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1);
+                SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Big, enemiesPerBlock * 2, enemiesPerBlock * 3 - 1);
                 break;
 
             case EnemyFormationEnum.VerticalLines:
@@ -115,7 +119,7 @@ public class EnemySpawner : MonoBehaviour
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, 1);
                 for (int i = 0; i < numVerticalLines; i++)
                 {
-                    SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, i * blockDistance, i * blockDistance + 1);
+                    SpawnEnemyBlock(movementSettings, i % 2 == 0 ? EnemyTypeEnum.Basic :  EnemyTypeEnum.Big, i * blockDistance, i * blockDistance + 1);
                 }
                 break;
 
@@ -124,7 +128,7 @@ public class EnemySpawner : MonoBehaviour
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, 1);
                 for (int i = 0; i < EnemyConstants.MAX_ENEMIES_ON_CIRCLE; i++)
                 {
-                    SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, i * enemiesPerBlock, i * enemiesPerBlock + enemiesPerBlock, i % 2 == 0 ? 0 : 2, i % 2 == 0 ? 2 : 4);
+                    SpawnEnemyBlock(movementSettings, i % 2 == 0 ? EnemyTypeEnum.Big : EnemyTypeEnum.Small, i * enemiesPerBlock, i * enemiesPerBlock + enemiesPerBlock, i % 2 == 0 ? 0 : 2, i % 2 == 0 ? 2 : 4);
                 }
                 break;
 
