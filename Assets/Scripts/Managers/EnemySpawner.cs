@@ -19,6 +19,7 @@ public class EnemySpawner : MonoBehaviour
 
     private LevelStatsModel levelStatsModel;
     private bool wavePending = false;
+    private bool hasScout = false;
 
     void Start()
     {
@@ -35,6 +36,12 @@ public class EnemySpawner : MonoBehaviour
             {
                 wavePending = true;
                 Invoke("StartWave", 2);
+            }
+
+            if (!hasScout && Random.Range(0.0f, 1.0f) > 0.98)
+            {
+                hasScout = true;
+                SpawnScout();
             }
         }
     }
@@ -119,7 +126,7 @@ public class EnemySpawner : MonoBehaviour
                 movementSettings = new EnemyMovementSettingsVO(formation, EnemyMovementTypeEnum.ZigZag, Mathf.PI * 2 / 8, 1);
                 for (int i = 0; i < numVerticalLines; i++)
                 {
-                    SpawnEnemyBlock(movementSettings, i % 2 == 0 ? EnemyTypeEnum.Basic :  EnemyTypeEnum.Big, i * blockDistance, i * blockDistance + 1);
+                    SpawnEnemyBlock(movementSettings, i % 2 == 0 ? EnemyTypeEnum.Basic : EnemyTypeEnum.Big, i * blockDistance, i * blockDistance + 1);
                 }
                 break;
 
@@ -142,6 +149,12 @@ public class EnemySpawner : MonoBehaviour
                 break;
         }
         wavePending = false;
+    }
+
+    void SpawnScout()
+    {
+        EnemyMovementSettingsVO movementSettings = new EnemyMovementSettingsVO(EnemyFormationEnum.Circle, EnemyMovementTypeEnum.Circle, 0, 1, false);
+        SpawnEnemyAt(LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + 5 * EnemyConstants.ENEMY_ROW_DISTANCE, 0, EnemyTypeEnum.Scout, movementSettings);
     }
 
     void SpawnEnemyBlock(EnemyMovementSettingsVO movementSettings, EnemyTypeEnum enemyType, float startCirclePos, float endCirclePos, int startRow = 0, int endRow = EnemyConstants.MAX_ENEMY_ROWS)
@@ -196,7 +209,7 @@ public class EnemySpawner : MonoBehaviour
                 collider.radius = 0.22f;
                 break;
             case EnemyTypeEnum.Scout:
-                enemyProperties.ShootingRate = 5;
+                enemyProperties.ShootingRate = 10;
                 collider.radius = 0.22f;
                 break;
         }

@@ -8,6 +8,6 @@
     Spiral,
     VerticalLines,
     HorizontalLines,
-    Zigzag
-
+    Zigzag,
+    Circle
 }

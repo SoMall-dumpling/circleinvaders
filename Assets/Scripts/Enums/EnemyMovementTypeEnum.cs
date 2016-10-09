@@ -1,5 +1,6 @@
 ﻿public enum EnemyMovementTypeEnum
 {
     ZigZag,
-    Spiral
+    Spiral,
+    Circle
 }

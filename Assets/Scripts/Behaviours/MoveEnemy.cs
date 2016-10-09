@@ -22,11 +22,27 @@ public class MoveEnemy : MonoBehaviour
         movementSettings = value;
         stepsOnCircleNum = Mathf.FloorToInt(movementSettings.MaxAngle / EnemyConstants.ENEMY_STEP_ANGLE);
         stepsOnCircleDirection = movementSettings.StartDirection;
-        CancelInvoke();
-        InvokeRepeating("Move", StepTime, StepTime);
+        if (movementSettings.IsStepWise)
+        {
+            CancelInvoke();
+            InvokeRepeating("Move", StepTime, StepTime);
+        }
+    }
+
+    void Update()
+    {
+        if (!movementSettings.IsStepWise)
+        {
+            Move(Time.deltaTime);
+        }
     }
 
     void Move()
+    {
+        Move(1);
+    }
+
+    void Move(float timeFactor = 1)
     {
         if (movementSettings == null) return;
 
@@ -34,19 +50,23 @@ public class MoveEnemy : MonoBehaviour
         {
             case EnemyMovementTypeEnum.Spiral:
                 float stepsInFullCircle = Mathf.PI * 2 / (EnemyConstants.ENEMY_STEP_ANGLE * enemyProperties.MovementSpeed);
-                MoveOnCircle(EnemyConstants.ENEMY_ROW_DISTANCE / stepsInFullCircle * 1.5f);
+                MoveOnCircle(timeFactor, EnemyConstants.ENEMY_ROW_DISTANCE / stepsInFullCircle * 1.5f);
+                break;
+
+            case EnemyMovementTypeEnum.Circle:
+                MoveOnCircle(timeFactor);
                 break;
 
             default:
             case EnemyMovementTypeEnum.ZigZag:
                 if (stepsOnCircleCounter < stepsOnCircleNum)
                 {
-                    MoveOnCircle();
+                    MoveOnCircle(timeFactor);
                     stepsOnCircleCounter++;
                 }
                 else
                 {
-                    MoveTowardsPlanet();
+                    MoveTowardsPlanet(timeFactor);
                     stepsOnCircleCounter = 0;
                     stepsOnCircleDirection *= -1;
                 }
@@ -54,11 +74,11 @@ public class MoveEnemy : MonoBehaviour
         }
     }
 
-    void MoveOnCircle(float moveDownDistance = 0)
+    void MoveOnCircle(float timeFactor = 1, float moveDownDistance = 0)
     {
         float distance = transform.position.magnitude;
         float currentAngleRadian = Mathf.Atan2(transform.position.y, transform.position.x);
-        float newAngleRadian = currentAngleRadian + EnemyConstants.ENEMY_STEP_ANGLE * enemyProperties.MovementSpeed * stepsOnCircleDirection;
+        float newAngleRadian = currentAngleRadian + EnemyConstants.ENEMY_STEP_ANGLE * enemyProperties.MovementSpeed * stepsOnCircleDirection * timeFactor;
 
         Vector3 newPosition = new Vector3(distance * Mathf.Cos(newAngleRadian), distance * Mathf.Sin(newAngleRadian), 0);
         newPosition = newPosition + (-newPosition.normalized * moveDownDistance);
@@ -68,7 +88,7 @@ public class MoveEnemy : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, 0, angleInDegrees);
     }
 
-    void MoveTowardsPlanet()
+    void MoveTowardsPlanet(float timeFactor = 1)
     {
         if (SingletonMapper.Get<LevelStatsModel>().IsLost())
         {
@@ -79,7 +99,7 @@ public class MoveEnemy : MonoBehaviour
         {
             Vector3 newPosition = transform.position;
             Vector3 moveDirection = -transform.position.normalized;
-            newPosition = transform.position + moveDirection * EnemyConstants.ENEMY_ROW_DISTANCE * 0.5f;
+            newPosition = transform.position + moveDirection * EnemyConstants.ENEMY_ROW_DISTANCE * 0.5f * timeFactor;
             transform.position = newPosition;
         }
     }
