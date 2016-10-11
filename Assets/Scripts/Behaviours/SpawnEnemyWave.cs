@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class EnemySpawner : MonoBehaviour
+public class SpawnEnemyWave : MonoBehaviour
 {
 
     public GameObject Enemy;
@@ -18,41 +18,23 @@ public class EnemySpawner : MonoBehaviour
     };
 
     private LevelStatsModel levelStatsModel;
-    private bool wavePending = false;
-    private bool hasScout = false;
 
     void Start()
     {
         levelStatsModel = SingletonMapper.Get<LevelStatsModel>();
-        SingletonMapper.Get<EventManager>().EnemyDestroyed += OnEnemyDestroyed;
         StartWave();
     }
 
     void Update()
     {
-        if (!wavePending)
+        if (!levelStatsModel.IsWavePending)
         {
             int enemyCount = GameObject.FindGameObjectsWithTag(TagConstants.ENEMY).Length;
             if (enemyCount == 0)
             {
-                wavePending = true;
+                levelStatsModel.IsWavePending = true;
                 Invoke("StartWave", 2);
             }
-
-            if (!hasScout && Random.Range(0.0f, 1.0f) > 0.98)
-            {
-                hasScout = true;
-                SpawnScout();
-            }
-        }
-    }
-
-    void OnEnemyDestroyed(GameObject enemy)
-    {
-        EnemyProperties enemyProperties = enemy.GetComponent<EnemyProperties>();
-        if (enemyProperties.EnemyType == EnemyTypeEnum.Scout)
-        {
-            hasScout = false;
         }
     }
 
@@ -158,14 +140,7 @@ public class EnemySpawner : MonoBehaviour
                 SpawnEnemyBlock(movementSettings, EnemyTypeEnum.Basic, enemiesPerBlock * 3, enemiesPerBlock * 4);
                 break;
         }
-        wavePending = false;
-    }
-
-    void SpawnScout()
-    {
-        EnemyMovementSettingsVO movementSettings = new EnemyMovementSettingsVO(EnemyFormationEnum.Circle, EnemyMovementTypeEnum.Circle, 0, 1, false);
-        float angle = Random.Range(0, Mathf.PI * 2);
-        SpawnEnemyAt(LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + 5 * EnemyConstants.ENEMY_ROW_DISTANCE, angle, EnemyTypeEnum.Scout, movementSettings);
+        levelStatsModel.IsWavePending = false;
     }
 
     void SpawnEnemyBlock(EnemyMovementSettingsVO movementSettings, EnemyTypeEnum enemyType, float startCirclePos, float endCirclePos, int startRow = 0, int endRow = EnemyConstants.MAX_ENEMY_ROWS)
@@ -229,4 +204,5 @@ public class EnemySpawner : MonoBehaviour
         MoveEnemy moveComponent = enemy.GetComponent<MoveEnemy>();
         moveComponent.SetSettings(movementSettings);
     }
+
 }

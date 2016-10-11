@@ -7,7 +7,10 @@ public class DestroyOnTouchPlanet : MonoBehaviour
     {
         if (transform.position.magnitude < LevelConstants.PLANET_RADIUS)
         {
-            SingletonMapper.Get<EventManager>().DispatchEnemyDestroyed(gameObject);
+            if (gameObject.tag == TagConstants.ENEMY)
+            {
+                SingletonMapper.Get<EventManager>().DispatchEnemyDestroyed(gameObject);
+            }
             Destroy(gameObject);
         }
     }

@@ -37,6 +37,8 @@
         }
     }
 
+    public bool IsWavePending { get; set; }
+
     public bool IsLost()
     {
         return _currentHealth <= 0;
