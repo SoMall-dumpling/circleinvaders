@@ -24,6 +24,7 @@ public class EnemySpawner : MonoBehaviour
     void Start()
     {
         levelStatsModel = SingletonMapper.Get<LevelStatsModel>();
+        SingletonMapper.Get<EventManager>().EnemyDestroyed += OnEnemyDestroyed;
         StartWave();
     }
 
@@ -46,14 +47,23 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
+    void OnEnemyDestroyed(GameObject enemy)
+    {
+        EnemyProperties enemyProperties = enemy.GetComponent<EnemyProperties>();
+        if (enemyProperties.EnemyType == EnemyTypeEnum.Scout)
+        {
+            hasScout = false;
+        }
+    }
+
     void StartWave()
     {
         levelStatsModel.CurrentWaveNumber++;
         EnemyFormationEnum currentFormation = formations[(levelStatsModel.CurrentWaveNumber - 1) % formations.Length];
-        SpawnEnemies(currentFormation);
+        SpawnStaticEnemies(currentFormation);
     }
 
-    void SpawnEnemies(EnemyFormationEnum formation)
+    void SpawnStaticEnemies(EnemyFormationEnum formation)
     {
         if (Debug.isDebugBuild) Debug.Log("Spawning enemies in formation " + formation);
         int maxEnemiesOnCircle = EnemyConstants.MAX_ENEMIES_ON_CIRCLE;
@@ -154,7 +164,8 @@ public class EnemySpawner : MonoBehaviour
     void SpawnScout()
     {
         EnemyMovementSettingsVO movementSettings = new EnemyMovementSettingsVO(EnemyFormationEnum.Circle, EnemyMovementTypeEnum.Circle, 0, 1, false);
-        SpawnEnemyAt(LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + 5 * EnemyConstants.ENEMY_ROW_DISTANCE, 0, EnemyTypeEnum.Scout, movementSettings);
+        float angle = Random.Range(0, Mathf.PI * 2);
+        SpawnEnemyAt(LevelConstants.MIN_ENEMY_SPAWN_DISTANCE + 5 * EnemyConstants.ENEMY_ROW_DISTANCE, angle, EnemyTypeEnum.Scout, movementSettings);
     }
 
     void SpawnEnemyBlock(EnemyMovementSettingsVO movementSettings, EnemyTypeEnum enemyType, float startCirclePos, float endCirclePos, int startRow = 0, int endRow = EnemyConstants.MAX_ENEMY_ROWS)

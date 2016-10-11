@@ -18,6 +18,7 @@ public class DestroyOnPlayerBullet : MonoBehaviour
             enemyProperties.CurrentHits++;
             if (enemyProperties.CurrentHits == enemyProperties.HitsToKill)
             {
+                SingletonMapper.Get<EventManager>().DispatchEnemyDestroyed(gameObject);
                 Destroy(gameObject);
             }
             Destroy(collision.gameObject);

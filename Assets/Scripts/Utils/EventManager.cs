@@ -1,4 +1,6 @@
-﻿public class EventManager
+﻿using UnityEngine;
+
+public class EventManager
 {
 
     public delegate void OnWaveStarted();
@@ -25,6 +27,14 @@
         HealthChanged();
     }
 
+    public delegate void OnEnemyDestroyed(GameObject enemy);
+    public event OnEnemyDestroyed EnemyDestroyed;
+
+    public void DispatchEnemyDestroyed(GameObject enemy)
+    {
+        EnemyDestroyed(enemy);
+    }
+
     public delegate void OnLose();
     public event OnLose Lose;
 
@@ -32,5 +42,5 @@
     {
         Lose();
     }
-	
+
 }
