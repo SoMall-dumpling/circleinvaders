@@ -22,7 +22,6 @@ public class SpawnEnemyWave : MonoBehaviour
     void Start()
     {
         levelStatsModel = SingletonMapper.Get<LevelStatsModel>();
-        StartWave();
     }
 
     void Update()
@@ -33,7 +32,7 @@ public class SpawnEnemyWave : MonoBehaviour
             if (enemyCount == 0)
             {
                 levelStatsModel.IsWavePending = true;
-                Invoke("StartWave", 2);
+                Invoke("StartWave", levelStatsModel.CurrentWaveNumber == 1 ? 0 : 2);
             }
         }
     }

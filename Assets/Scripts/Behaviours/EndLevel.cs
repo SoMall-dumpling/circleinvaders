@@ -12,6 +12,7 @@ public class EndLevel : MonoBehaviour
     {
         // TODO destroy player & animate
         // TODO destroy planet & animate
+        // TODO remove covers
 
         Destroy(GameObject.FindGameObjectWithTag("Player"));
     }
