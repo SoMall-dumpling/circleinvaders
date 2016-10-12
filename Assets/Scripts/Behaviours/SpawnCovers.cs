@@ -29,7 +29,7 @@ public class SpawnCovers : MonoBehaviour
 
     void SpawnNewCovers()
     {
-        int numCovers = 4;
+        int numCovers = GetNumCovers();
         int coverWidth = 7;
         int coverHeight = 3;
 
@@ -60,5 +60,32 @@ public class SpawnCovers : MonoBehaviour
         container.transform.parent = gameObject.transform;
         container.transform.Rotate(0, 0, -90 + angle * 180 / Mathf.PI);
         return container;
+    }
+
+    private int GetNumCovers()
+    {
+        switch(SingletonMapper.Get<LevelStatsModel>().CurrentWaveNumber)
+        {
+            case 1:
+            case 2:
+                return 0;
+
+            case 3:
+            case 4:
+                return 2;
+
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+                return 4;
+
+            case 9:
+            case 10:
+                return 2;
+
+            default:
+                return 4;
+        }
     }
 }
